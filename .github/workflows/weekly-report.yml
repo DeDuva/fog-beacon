@@ -49,7 +49,7 @@ jobs:
 
       - name: Post to GitHub Discussions
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           TITLE="Weekly Industry Report — $(date -u +%Y-%m-%d)"
 
