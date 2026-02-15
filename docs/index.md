@@ -5,4 +5,4 @@ title: Reports
 
 # Weekly Industry Research Reports
 
-No reports yet. The first report will appear after the next workflow run.
+- [2026-02-15](reports/2026-02-15)
