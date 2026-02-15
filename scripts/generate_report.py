@@ -32,7 +32,7 @@ def generate_report(prompt: str, model: str, additional_context: str) -> str:
     response = client.messages.create(
         model=model,
         max_tokens=16000,
-        tools=[{"type": "web_search_20250305"}],
+        tools=[{"type": "web_search_20250305", "name": "web_search"}],
         messages=[{"role": "user", "content": user_message}],
     )
 
@@ -53,7 +53,7 @@ def format_report(body: str, model: str) -> str:
     )
     footer = (
         "\n\n---\n\n"
-        "*Automated by [fog-beacon](https://github.com/dovziprojects/fog-beacon) — "
+        "*Automated by [fog-beacon](https://github.com/DeDuva/fog-beacon) — "
         "weekly industry research powered by Claude AI with web search.*"
     )
     return header + body + footer
