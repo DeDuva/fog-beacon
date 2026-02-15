@@ -22,8 +22,9 @@ jobs:
   generate-report:
     runs-on: ubuntu-latest
     permissions:
+      contents: write
+      discussions: write
       issues: write
-      contents: read
 
     steps:
       - name: Checkout repository
@@ -46,15 +47,78 @@ jobs:
           ADDITIONAL_CONTEXT: ${{ inputs.additional_context || '' }}
         run: python scripts/generate_report.py
 
-      - name: Create GitHub Issue with report
+      - name: Post to GitHub Discussions
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TITLE="Weekly Industry Report — $(date -u +%Y-%m-%d)"
-          gh issue create \
-            --title "$TITLE" \
-            --body-file output/report.md \
-            --label "automated-report,weekly"
+
+          # Get repository node ID
+          REPO_ID=$(gh api graphql -q '.data.repository.id' -f query='
+            query { repository(owner: "${{ github.repository_owner }}", name: "fog-beacon") { id } }')
+
+          # Get "General" category ID
+          CAT_ID=$(gh api graphql -q '.data.repository.discussionCategories.nodes[] | select(.name=="General") | .id' -f query='
+            query { repository(owner: "${{ github.repository_owner }}", name: "fog-beacon") {
+              discussionCategories(first: 20) { nodes { id name } }
+            } }')
+
+          echo "Repo ID: $REPO_ID"
+          echo "Category ID: $CAT_ID"
+
+          # Create discussion
+          DISC_ID=$(gh api graphql -q '.data.createDiscussion.discussion.id' \
+            -f query='mutation($repoId:ID!, $catId:ID!, $title:String!, $body:String!) {
+              createDiscussion(input: {repositoryId: $repoId, categoryId: $catId, title: $title, body: $body}) {
+                discussion { id url }
+              }
+            }' \
+            -f repoId="$REPO_ID" \
+            -f catId="$CAT_ID" \
+            -f title="$TITLE" \
+            -F body=@output/report.md)
+
+          echo "Discussion created: $DISC_ID"
+
+      - name: Commit report to Pages
+        run: |
+          DATE=$(date -u +%Y-%m-%d)
+          mkdir -p docs/reports
+
+          # Create report file with Jekyll front matter
+          {
+            echo "---"
+            echo "layout: default"
+            echo "title: \"Weekly Report — $DATE\""
+            echo "date: $DATE"
+            echo "---"
+            echo ""
+            cat output/report.md
+          } > "docs/reports/$DATE.md"
+
+          # Regenerate index (newest first)
+          {
+            echo "---"
+            echo "layout: default"
+            echo "title: Reports"
+            echo "---"
+            echo ""
+            echo "# Weekly Industry Research Reports"
+            echo ""
+            for f in $(ls -r docs/reports/*.md 2>/dev/null); do
+              BASENAME=$(basename "$f" .md)
+              if [ "$BASENAME" != ".gitkeep" ]; then
+                echo "- [$BASENAME](reports/$BASENAME)"
+              fi
+            done
+          } > docs/index.md
+
+          # Commit and push
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          git commit -m "Add weekly report $DATE" || echo "No changes to commit"
+          git push
 
       - name: Upload report artifact
         if: always()
