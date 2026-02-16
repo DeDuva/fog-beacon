@@ -40,6 +40,20 @@ jobs:
       - name: Install dependencies
         run: pip install -r scripts/requirements.txt
 
+      - name: Determine report slug
+        run: |
+          DATE=$(date -u +%Y-%m-%d)
+          SLUG="$DATE"
+          if [ -f "docs/reports/$SLUG.md" ]; then
+            V=2
+            while [ -f "docs/reports/$DATE-v$V.md" ]; do
+              V=$((V + 1))
+            done
+            SLUG="$DATE-v$V"
+          fi
+          echo "REPORT_SLUG=$SLUG" >> "$GITHUB_ENV"
+          echo "Report slug: $SLUG"
+
       - name: Generate research report
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -51,7 +65,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
-          TITLE="Weekly Industry Report — $(date -u +%Y-%m-%d)"
+          TITLE="Weekly Industry Report — $REPORT_SLUG"
 
           # Get repository node ID
           REPO_ID=$(gh api graphql -q '.data.repository.id' -f query='
@@ -82,19 +96,18 @@ jobs:
 
       - name: Commit report to Pages
         run: |
-          DATE=$(date -u +%Y-%m-%d)
           mkdir -p docs/reports
 
           # Create report file with Jekyll front matter
           {
             echo "---"
             echo "layout: default"
-            echo "title: \"Weekly Report — $DATE\""
-            echo "date: $DATE"
+            echo "title: \"Weekly Report — $REPORT_SLUG\""
+            echo "date: $(date -u +%Y-%m-%d)"
             echo "---"
             echo ""
             cat output/report.md
-          } > "docs/reports/$DATE.md"
+          } > "docs/reports/$REPORT_SLUG.md"
 
           # Regenerate index (newest first)
           {
@@ -117,7 +130,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add docs/
-          git commit -m "Add weekly report $DATE" || echo "No changes to commit"
+          git commit -m "Add weekly report $REPORT_SLUG" || echo "No changes to commit"
           git push
 
       - name: Upload report artifact
