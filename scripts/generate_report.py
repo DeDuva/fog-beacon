@@ -42,7 +42,21 @@ def generate_report(prompt: str, model: str, additional_context: str) -> str:
         if block.type == "text":
             parts.append(block.text)
 
-    return "\n".join(parts)
+    report = "\n".join(parts)
+
+    # Strip Claude's "thinking out loud" narration before the actual report
+    # These are lines like "I'll conduct research..." or "Let me search..."
+    import re
+    report = re.sub(
+        r"^(I'll .+|Let me .+|Based on .+|Now let me .+)\n*",
+        "",
+        report,
+        flags=re.MULTILINE,
+    )
+    # Remove leading whitespace/newlines left after stripping
+    report = report.lstrip("\n")
+
+    return report
 
 
 def format_report(body: str, model: str) -> str:
