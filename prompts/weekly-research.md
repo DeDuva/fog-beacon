@@ -94,13 +94,16 @@ Group by: New entrants & launches | Funding & deals | Product updates | Key hire
 
 ### Hypothesis Scorecard
 
-| Hypothesis | This Week | Trend |
-|---|---|---|
-| Agents need IDPs to operate | STRENGTHENED / NEUTRAL / WEAKENED | ↑↗→↘↓ |
-| GitHub/GHA/serverless is the dominant agent stack | STRENGTHENED / NEUTRAL / WEAKENED | ↑↗→↘↓ |
-| Agents work within SDLC (not around it) | STRENGTHENED / NEUTRAL / WEAKENED | ↑↗→↘↓ |
+Use this exact format (do NOT use a markdown table — it breaks with long text). Use a simple list:
 
-Brief supporting evidence for each rating (2–3 bullets with source links).
+**Agents need IDPs to operate:** STRENGTHENED / NEUTRAL / WEAKENED ↑↗→↘↓
+- 2–3 bullets of supporting evidence with [source](url) links
+
+**GitHub/GHA/serverless is the dominant agent stack:** STRENGTHENED / NEUTRAL / WEAKENED ↑↗→↘↓
+- 2–3 bullets of supporting evidence with [source](url) links
+
+**Agents work within SDLC (not around it):** STRENGTHENED / NEUTRAL / WEAKENED ↑↗→↘↓
+- 2–3 bullets of supporting evidence with [source](url) links
 
 ### Early Warning Signals
 
