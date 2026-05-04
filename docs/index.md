@@ -5,6 +5,7 @@ title: Reports
 
 # Weekly Industry Research Reports
 
+- [2026-05-04](reports/2026-05-04)
 - [2026-04-27](reports/2026-04-27)
 - [2026-04-20](reports/2026-04-20)
 - [2026-04-13](reports/2026-04-13)
